@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Between the Tides</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="engine.js"></script>
+  <script defer src="records.js"></script>
+  <script defer src="guide.js"></script>
+  <script defer src="bell-audio.js"></script>
+  <script defer src="wave-audio.js"></script>
+  <script defer src="extras.js"></script>
+  <script defer src="game.js"></script>
+  <script defer src="floating-status.js"></script>
+</head>
+<body>
+  <aside id="floating-status" class="floating-status" hidden aria-label="Live game status">
+    <button id="status-drag" class="status-drag" aria-label="Drag the status bar, or use arrow keys to move and Home to reset" title="Drag to move; when focused use arrows to move, Home to reset">⠿</button>
+    <button id="status-return" class="status-return" title="Return to the full status panel"><span id="mini-tide"></span><span id="mini-eco"></span><span id="mini-round"></span></button>
+  </aside>
+  <audio id="bgm-audio" src="audio/dreams-become-real.mp3" loop preload="metadata"></audio>
+  <header class="masthead">
+    <a class="wordmark" href="index.html" aria-label="Return to start">Between the Tides<span>BETWEEN THE TIDES</span></a>
+    <span class="edition">3.8 Playtest · English</span>
+    <button id="rules-open" class="quiet">How to play</button>
+  </header>
+  <main><p class="keyboard-help">Keyboard: Tab / Shift+Tab to move focus; Enter or Space to activate. Choose A/B/C with 1/2/3, or Wait with 4. Choose light/heavy harvest with 1/2. Space or Enter confirms or continues. A/B/C/W also work. Esc closes dialogs.</p><div class="extra-toolbar"><label><input id="sound-enabled" type="checkbox" checked> Sound on</label><details id="audio-settings"><summary>Volume settings</summary><div class="audio-sliders"><label for="volume-bgm">BGM <output id="value-bgm">20%</output></label><input id="volume-bgm" type="range" min="0" max="100" step="1" value="20"><label for="volume-bell">Bell <output id="value-bell">60%</output></label><input id="volume-bell" type="range" min="0" max="100" step="1" value="60"><label for="volume-click">Click <output id="value-click">25%</output></label><input id="volume-click" type="range" min="0" max="100" step="1" value="25"><label for="volume-wave">Waves <output id="value-wave">35%</output></label><input id="volume-wave" type="range" min="0" max="100" step="1" value="35"><button id="preview-wave" class="quiet">Preview waves</button><button id="preview-bell" class="quiet">Preview bell</button><button id="preview-click" class="quiet">Preview click</button></div><p class="muted" id="music-status" role="status">Music starts after your first click or key press. Use arrow keys to adjust focused sliders.</p><p class="muted">Dreams Become Real — Kevin MacLeod (incompetech.com), CC BY 4.0. See AUDIO-CREDITS.md for full credits.</p></details><button id="stats-open" class="quiet">My statistics</button><span id="storage-note" class="muted"></span></div>
+    <section id="start" class="landing">
+      <div class="eyebrow">ONE SHORE. TWO LIVES.</div>
+      <h1>As the tide retreats,<br>find a way to coexist.</h1>
+      <p class="intro">Birds need energy to migrate. Humans harvest to sustain their lives.<br>You share one shore — and responsibility for its fragile ecology.</p>
+      <div class="shore-art" aria-hidden="true"><span class="sun"></span><span class="bird-mark">⌁</span><span class="shore-line one"></span><span class="shore-line two"></span><span class="shore-line three"></span><span class="art-caption">Upper shore A · Middle shore B · Lower shore C</span></div>
+      <p class="guide-setting"><label><input id="guide-start" type="checkbox" checked> Enable guidance for this game</label><small>Learn as you play. Turn guidance off anytime; your preference is remembered.</small></p><div class="role-grid">
+        <button id="role-bird" class="role-card"><span class="role-icon">B</span><span><strong>Play as bird</strong><small>Choose a bird and seek its preferred food</small></span><span class="arrow">↗</span></button>
+        <button id="role-human" class="role-card"><span class="role-icon human">H</span><span><strong>Play as human</strong><small>Balance your harvest with ecological health</small></span><span class="arrow">↗</span></button>
+      </div>
+      <p class="landing-note">5 effective rounds · 17-point targets · Starting ecology: 3</p>
+    </section>
+
+    <section id="bird-select" hidden>
+      <button id="back-start" class="quiet">← Back</button>
+      <div class="eyebrow">CHOOSE YOUR BIRD</div><h1>Who will visit the shore?</h1>
+      <p class="muted">Draw 1 food token per foraging action. Preferred food gives +2 energy.</p>
+      <div id="bird-options" class="bird-grid"></div>
+    </section>
+
+    <section id="play" hidden>
+      <div class="game-heading"><div><div class="eyebrow">THE INTERTIDAL COMMONS</div><h1>Life between the tides</h1></div><div class="player-label" id="player-label"></div></div>
+      <div class="dashboard">
+        <section class="stat tide-stat"><span class="label">Current tide</span><strong id="tide"></strong><span id="open-zones" class="sub"></span></section>
+        <section class="stat"><span class="label">Ecological health</span><strong id="eco"></strong><span class="sub">At 0, both sides immediately fail</span></section>
+        <section class="stat"><span class="label">Effective rounds completed</span><strong id="effective"></strong><span id="actual-round" class="sub"></span></section>
+      </div>
+      <div class="score-grid">
+        <section class="score-card"><div><span class="label">Bird energy <span id="bird-owner"></span></span><strong id="bird-score"></strong></div><p id="bird-info"></p><progress id="bird-progress" max="17" value="0" aria-label="Bird target progress"></progress></section>
+        <section class="score-card human-score"><div><span class="label">Human earnings <span id="human-owner"></span></span><strong id="human-score"></strong></div><p>Light: 1 token · Heavy: 2 tokens, ecology -1</p><progress id="human-progress" max="17" value="0" aria-label="Human target progress"></progress></section>
+      </div>
+      <div class="section-caption"><h2>Intertidal areas</h2><span>Drawn tokens stay removed · Empty any area and both sides fail</span></div>
+      <div id="zones" class="zone-grid"></div>
+      <section id="result" class="result" hidden aria-live="polite"></section>
+      <p class="guide-setting"><label><input id="guide-toggle" type="checkbox" checked> Guidance</label></p><aside id="guide-panel" class="guide-panel" hidden aria-label="Guidance"><p id="guide-message"></p><details id="guide-clues" hidden><summary>What clues can I look for?</summary><ul><li>How many points do they still need? Might a high-value area attract them as they approach 17?</li><li>What food do they prefer? If your opponent is the bird, which area might attract it?</li><li>What did they choose before? They may repeat an area or change their approach.</li></ul><p>The AI uses public information. It cannot read your secret choice or predict random draws.</p></details></aside>
+      <section class="action-panel" aria-labelledby="action-heading">
+        <p id="turn-timer" role="status"></p><div class="action-title"><span id="phase-tag" class="tag"></span><h2 id="action-heading"></h2></div>
+        <p id="action-help"></p><div id="action-buttons" class="action-buttons"></div>
+        <p id="risk-note" class="risk-note" hidden></p>
+        <div id="reveal" class="reveal" hidden></div>
+        <div id="primary-controls" class="primary-controls"></div>
+      </section>
+      <section id="round-report" class="round-report" aria-live="polite" hidden></section>
+      <section class="history-panel">
+        <div class="history-header"><button id="history-toggle" class="quiet" aria-expanded="false" aria-controls="history-content">Show both sides’ history (0)</button><div class="export-buttons"><button id="copy-history" class="quiet">Copy all history</button><button id="export-json" class="quiet">Export JSON</button><button id="export-csv" class="quiet">Export CSV</button></div></div>
+        <p id="export-status" class="muted" role="status"></p><div id="history-content" hidden></div>
+      </section>
+      <div class="bottom-bar"><span>Local strategy AI · Fully offline</span><button id="restart" class="quiet">Restart</button></div>
+    </section>
+  </main>
+  <footer>BETWEEN THE TIDES <span>One shore. A shared future.</span></footer>
+
+  <dialog id="rules-dialog" aria-labelledby="rules-title"><div class="dialog-heading"><h2 id="rules-title">3.8 Web Edition · Rules</h2><button class="quiet" id="rules-close">Close</button></div>
+    <p>Both sides start at 0 points; ecology starts at 3. After 5 effective rounds, each side needs 17 points to succeed. Reaching the target early does not end the game.</p>
+    <h3>Tides and actions</h3><p>High tide: A or Wait. Mid tide: A/B. Low tide: A/B/C. Each round, draw from a deck with two cards of each tide, then replace the card and shuffle.</p>
+    <h3>Choose secretly, then reveal</h3><p>Choose an area secretly and ring the Decision Bell to lock it. Reveal both choices together, then the human chooses light or heavy harvesting. The bird draws one token first; the human draws afterward. Draw blindly without replacement.</p>
+    <h3>Scoring and ecology</h3><p>Base points per token: A=1, B=3, C=5. Preferred food gives the bird +2; the human has no preference bonus. Light harvest: 1 token. Heavy harvest: 2 tokens and ecology -1. Sharing an area costs another 1 ecology but no bird energy.</p>
+    <p>If both Wait at high tide, ecology recovers by 1 (maximum 3). No effective round is counted and resources are not replenished. If only one side Waits, the round counts and ecology does not recover.</p>
+    <h3>Shared failure takes priority</h3><p>Check after every draw. If an area has no tokens of any type left, both sides immediately fail: stop drawing and do not credit pending points this round. Ecology reaching 0 also causes immediate shared failure. Running out of one food type does not empty an area.</p>
+    <p>After five effective rounds: both reaching 17 means shared success; if only one reaches 17, only that side succeeds. If neither reaches 17, both fail their score targets.</p>
+    <h3>Resources and birds</h3><p>Starting quantities (shellfish/worms/crabs): A 3/4/5, B 4/5/3, C 5/3/4. Map labels show fixed starting amounts, not remaining resources. History and exports retain full resource data. Oystercatcher prefers shellfish; Curlew prefers worms; Redshank prefers crabs.</p>
+    <h3>Local AI and history</h3><p>The AI uses only public state and history, locking its area before you choose. The human AI picks its harvest amount after the reveal. It cannot predict random draws. Copy or export history before refreshing, which clears the current game.</p>
+  </dialog>
+  <dialog id="copy-dialog" aria-labelledby="copy-title"><div class="dialog-heading"><h2 id="copy-title">Copy history manually</h2><button id="copy-close" class="quiet">Close</button></div><p>Automatic copying was blocked. The text is selected: press Ctrl+C (Command+C on Mac).</p><textarea id="copy-text" readonly aria-label="Complete game record"></textarea><button id="select-copy" class="primary">Select all text</button></dialog>
+<dialog id="stats-dialog"><div class="dialog-heading"><h2>Local player success rates</h2><button id="stats-close" class="quiet">Close</button></div><p>Success rate includes solo and shared success. Unfinished games are excluded. Records stay in this browser; clearing browser data may remove them.</p><div id="stats-content"></div><button id="stats-export" class="primary">Export statistics JSON</button></dialog>
+  <noscript>Enable JavaScript and reopen the game.</noscript>
+</body>
+</html>
